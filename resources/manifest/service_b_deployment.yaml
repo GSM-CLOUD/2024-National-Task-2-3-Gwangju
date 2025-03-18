@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "$(SERVICE_B_DEPLOYMENT_NAME)"
+  namespace: $(APP_NAMESPACE)
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: service-b
+  template:
+    metadata:
+      labels:
+        app: service-b
+    spec:
+      serviceAccountName: fluentbit-sa
+      containers:
+      - name: fastapi-container
+        image: $(ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com/$(ECR_APP_B):latest
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+          - name: log-volume
+            mountPath: /log
+      - name: fluentbit-sidecar
+        image: fluent/fluent-bit:latest
+        volumeMounts:
+          - name: log-volume
+            mountPath: /log
+          - name: config-volume
+            mountPath: /fluent-bit/etc/
+      volumes:
+      - name: log-volume
+        emptyDir: {}
+      - name: config-volume
+        configMap:
+          name: service-b-fluent-bit-config

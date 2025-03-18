@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: fluentd-svc
+  namespace: $(FLUENTD_NAMESPACE)
+spec:
+  selector:
+    k8s-app: fluentd-cloudwatch
+  ports:
+    - protocol: TCP
+      port: 24224
+      targetPort: 24224
+  type: ClusterIP
